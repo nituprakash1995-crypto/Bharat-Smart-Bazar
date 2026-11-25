@@ -1,18 +1,15 @@
-# Bharat Smart Bazar — Android Demo
+# Bharat Smart Bazar - Android demo
 
-Customer-side demo for Bharat Smart Bazar, Sonvarsa Chowk, Samastipur.
+This is a starter Android Studio project using Kotlin and Jetpack Compose.
 
-Included:
-- Logo/branding
-- Home screen
-- Search
-- Categories
-- Sample grocery products
-- Add to cart
-- Cart total
-- UPI checkout button (demo UI only)
-- Profile / orders placeholders
+## Build APK online with GitHub Actions
+1. Upload the **contents** of this folder into the root of your GitHub repository (not the enclosing folder itself).
+2. Keep `.github/workflows/build-apk.yml` in that exact path. Enable viewing hidden files when uploading, or create the workflow file separately in GitHub.
+3. Open the Actions tab and run **Build Bharat Smart Bazar APK**.
+4. Download the `Bharat-Smart-Bazar-APK` artifact from a successful run. The APK is `app-debug.apk` inside the downloaded ZIP.
 
-Open this folder in Android Studio and run the `app` configuration on an Android device/emulator.
-
-Note: The UPI button is a UI placeholder in this demo. Real UPI/payment-gateway integration, Firebase backend, admin panel, delivery management, authentication, and 1000+ live products are for the final version.
+## Demo limitations
+- Includes sample grocery items only, not a live catalogue of 1000+ products.
+- Cart works locally in the app, but checkout does not submit an order.
+- No real UPI/payment gateway, backend, admin panel, inventory, or delivery tracking is connected.
+- Add your verified shop logo and real product catalogue before release.
