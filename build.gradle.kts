@@ -1,36 +1,6 @@
 
-name: Build Bharat Smart Bazar APK
-
-"on":
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Build APK
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: '8.9'
-          arguments: assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Bharat-Smart-Bazar-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+plugins {
+    id("com.android.application") version "8.6.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.20" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.20" apply false
+}
