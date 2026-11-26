@@ -1,42 +1,21 @@
+
 package com.bharatsmartbazar
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,310 +25,411 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val Saffron = Color(0xFFFF9933)
-private val IndiaGreen = Color(0xFF138808)
-private val ChakraBlue = Color(0xFF000080)
-private val LightBackground = Color(0xFFF7F8FA)
+private val Green = Color(0xFF138808)
+private val Navy = Color(0xFF000080)
+private val Background = Color(0xFFF5F7F5)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            BharatSmartBazarApp()
+            BharatApp()
         }
     }
 }
 
+data class Grocery(
+    val name: String,
+    val price: String,
+    val emoji: String,
+    val category: String
+)
+
 @Composable
-fun BharatSmartBazarApp() {
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = LightBackground
-        ) {
-            var cartCount by remember { mutableIntStateOf(0) }
+fun BharatApp() {
+    var cart by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
+    var search by remember { mutableStateOf("") }
 
-            Column(
-                modifier = Modifier.fillMaxSize()
+    val products = listOf(
+        Grocery("Fresh Tomato", "₹40 / kg", "🍅", "Vegetables"),
+        Grocery("Potato", "₹30 / kg", "🥔", "Vegetables"),
+        Grocery("Onion", "₹35 / kg", "🧅", "Vegetables"),
+        Grocery("Amul Taaza Milk", "₹28 / 500ml", "🥛", "Dairy"),
+        Grocery("Fresh Paneer", "₹90 / 200g", "🧀", "Dairy"),
+        Grocery("India Gate Rice", "₹120 / kg", "🍚", "Grocery"),
+        Grocery("Aashirvaad Atta", "₹55 / kg", "🌾", "Grocery"),
+        Grocery("Parle-G Biscuits", "₹10 / pack", "🍪", "Snacks")
+    )
+
+    Scaffold(
+        containerColor = Background,
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color.White,
+                tonalElevation = 8.dp
             ) {
-                TopHeader()
+                val tabs = listOf(
+                    "Home", "Search", "Cart", "Profile"
+                )
+                val icons = listOf(
+                    Icons.Default.Home,
+                    Icons.Default.Search,
+                    Icons.Default.ShoppingCart,
+                    Icons.Default.Person
+                )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp)
-                ) {
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    SearchBox()
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    SaleBanner()
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = "Shop by Category",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.DarkGray
+                tabs.forEachIndexed { index, label ->
+                    NavigationBarItem(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        icon = {
+                            Icon(
+                                icons[index],
+                                contentDescription = label
+                            )
+                        },
+                        label = {
+                            Text(
+                                if (index == 2 && cart > 0)
+                                    "Cart ($cart)" else label
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Green,
+                            selectedTextColor = Green,
+                            indicatorColor = Color(0xFFE7F5E8)
+                        )
                     )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    CategoryRow()
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = "Popular Products",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.DarkGray
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    ProductCard(
-                        name = "Fresh Tomato",
-                        price = "₹40 / kg",
-                        emoji = "🍅",
-                        onAdd = { cartCount++ }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    ProductCard(
-                        name = "Amul Taaza Milk",
-                        price = "₹28 / 500 ml",
-                        emoji = "🥛",
-                        onAdd = { cartCount++ }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    ProductCard(
-                        name = "India Gate Rice",
-                        price = "₹120 / kg",
-                        emoji = "🍚",
-                        onAdd = { cartCount++ }
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    ProductCard(
-                        name = "Parle-G Biscuits",
-                        price = "₹10 / pack",
-                        emoji = "🍪",
-                        onAdd = { cartCount++ }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    DeliveryBanner()
-
-                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Header()
 
-            BottomNavigation(cartCount = cartCount)
+            when (selectedTab) {
+                0 -> {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = search,
+                            onValueChange = { search = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text("Search rice, milk, vegetables...")
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = "Search"
+                                )
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Green,
+                                unfocusedBorderColor = Color.LightGray
+                            )
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+
+                        SaleBanner()
+
+                        Spacer(Modifier.height(22.dp))
+
+                        SectionTitle("Shop by Category")
+
+                        Spacer(Modifier.height(12.dp))
+
+                        val categories = listOf(
+                            "🥦" to "Vegetables",
+                            "🍎" to "Fruits",
+                            "🥛" to "Dairy",
+                            "🍚" to "Grocery",
+                            "🍪" to "Snacks",
+                            "🧴" to "Personal Care"
+                        )
+
+                        LazyRow(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(categories) { category ->
+                                CategoryCard(
+                                    category.first,
+                                    category.second
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(22.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SectionTitle("Popular Products")
+                            Spacer(Modifier.weight(1f))
+                            Text(
+                                "Fresh Picks",
+                                color = Green,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        val filtered = products.filter {
+                            it.name.contains(search, ignoreCase = true)
+                        }
+
+                        filtered.forEach { product ->
+                            ProductCard(product) {
+                                cart++
+                            }
+                            Spacer(Modifier.height(12.dp))
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        DeliveryCard()
+
+                        Spacer(Modifier.height(16.dp))
+
+                        Text(
+                            "🇮🇳 Made for your neighbourhood",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            color = Navy,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+                    }
+                }
+
+                1 -> {
+                    Column(Modifier.padding(16.dp)) {
+                        SectionTitle("Search Products")
+                        Spacer(Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = search,
+                            onValueChange = { search = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text("What do you need today?")
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, null)
+                            }
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        products.filter {
+                            it.name.contains(search, ignoreCase = true)
+                        }.forEach {
+                            ProductCard(it) { cart++ }
+                            Spacer(Modifier.height(10.dp))
+                        }
+                    }
+                }
+
+                2 -> {
+                    Column(Modifier.padding(20.dp)) {
+                        SectionTitle("Your Shopping Cart")
+                        Spacer(Modifier.height(18.dp))
+                        Text(
+                            "🛒",
+                            fontSize = 55.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            "$cart items added to your cart",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(18.dp))
+                        Button(
+                            onClick = { selectedTab = 0 },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Green
+                            )
+                        ) {
+                            Text("Continue Shopping")
+                        }
+                        Text(
+                            "Demo cart: checkout and payment will be added in the next stage.",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                3 -> {
+                    Column(Modifier.padding(20.dp)) {
+                        SectionTitle("My Profile")
+                        Spacer(Modifier.height(20.dp))
+                        Text("🇮🇳 Bharat Smart Bazar", fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold, color = Navy)
+                        Spacer(Modifier.height(10.dp))
+                        Text("📍 Sonvarsa Chowk, Samastipur, Bihar")
+                        Spacer(Modifier.height(16.dp))
+                        Text("🛍️ My Orders")
+                        Spacer(Modifier.height(12.dp))
+                        Text("💳 Payment Options")
+                        Spacer(Modifier.height(12.dp))
+                        Text("📞 Contact Shop")
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun TopHeader() {
+fun Header() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.padding(
+                horizontal = 16.dp,
+                vertical = 16.dp
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    text = "🇮🇳 Bharat Smart Bazar",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ChakraBlue
+                    "🇮🇳 Bharat Smart Bazar",
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Navy
                 )
-
-                Spacer(modifier = Modifier.height(3.dp))
-
+                Spacer(Modifier.height(5.dp))
                 Text(
-                    text = "Sonvarsa Chowk, Samastipur, Bihar",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    "📍 Sonvarsa Chowk, Samastipur, Bihar",
+                    fontSize = 11.sp,
+                    color = Color.DarkGray
+                )
+                Text(
+                    "Your Neighbourhood Grocery Store",
+                    fontSize = 11.sp,
+                    color = Green,
+                    fontWeight = FontWeight.Bold
                 )
             }
-
             Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = "Cart",
-                tint = IndiaGreen,
+                Icons.Default.ShoppingCart,
+                contentDescription = "Shopping",
+                tint = Green,
                 modifier = Modifier.size(30.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .background(Saffron)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .background(Color.White)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .background(IndiaGreen)
-            )
+        Row(Modifier.fillMaxWidth()) {
+            Box(Modifier.weight(1f).height(5.dp).background(Saffron))
+            Box(Modifier.weight(1f).height(5.dp).background(Color.White))
+            Box(Modifier.weight(1f).height(5.dp).background(Green))
         }
     }
-}
-
-@Composable
-fun SearchBox() {
-    OutlinedTextField(
-        value = "",
-        onValueChange = {},
-        placeholder = {
-            Text("Search groceries, rice, milk...")
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search"
-            )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        singleLine = true
-    )
 }
 
 @Composable
 fun SaleBanner() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Saffron
         )
     ) {
-        Column(
-            modifier = Modifier.padding(18.dp)
-        ) {
+        Column(Modifier.padding(20.dp)) {
             Text(
-                text = "🇮🇳 FREEDOM SALE",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                "🇮🇳 BHARAT SMART BAZAR",
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
             )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
+            Spacer(Modifier.height(8.dp))
             Text(
-                text = "Fresh groceries at great prices!",
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                "Freshness at Your Doorstep!",
+                color = Color.White,
+                fontSize = 23.sp,
+                fontWeight = FontWeight.ExtraBold
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
+            Spacer(Modifier.height(6.dp))
             Text(
-                text = "Fast home delivery in your area",
-                fontSize = 13.sp,
-                color = Color.White
+                "Daily groceries • Great prices • Easy shopping",
+                color = Color.White,
+                fontSize = 12.sp
             )
+            Spacer(Modifier.height(12.dp))
+            Surface(
+                shape = RoundedCornerShape(30.dp),
+                color = Color.White
+            ) {
+                Text(
+                    "SHOP NOW  →",
+                    modifier = Modifier.padding(
+                        horizontal = 18.dp,
+                        vertical = 9.dp
+                    ),
+                    color = Green,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }
 
 @Composable
-fun CategoryRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        CategoryItem(
-            emoji = "🥦",
-            name = "Vegetables",
-            modifier = Modifier.weight(1f)
-        )
-
-        CategoryItem(
-            emoji = "🥛",
-            name = "Dairy",
-            modifier = Modifier.weight(1f)
-        )
-
-        CategoryItem(
-            emoji = "🍚",
-            name = "Rice",
-            modifier = Modifier.weight(1f)
-        )
-
-        CategoryItem(
-            emoji = "🍪",
-            name = "Snacks",
-            modifier = Modifier.weight(1f)
-        )
-    }
+fun SectionTitle(title: String) {
+    Text(
+        title,
+        fontSize = 19.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = Navy
+    )
 }
 
 @Composable
-fun CategoryItem(
-    emoji: String,
-    name: String,
-    modifier: Modifier = Modifier
-) {
+fun CategoryCard(emoji: String, name: String) {
     Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.width(94.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(emoji, fontSize = 30.sp)
+            Spacer(Modifier.height(7.dp))
             Text(
-                text = emoji,
-                fontSize = 27.sp
-            )
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-            Text(
-                text = name,
+                name,
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
         }
@@ -357,64 +437,50 @@ fun CategoryItem(
 }
 
 @Composable
-fun ProductCard(
-    name: String,
-    price: String,
-    emoji: String,
-    onAdd: () -> Unit
-) {
+fun ProductCard(product: Grocery, onAdd: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(17.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.padding(13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Card(
-                modifier = Modifier.size(75.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF1F5F2)
-                )
+            Surface(
+                modifier = Modifier.size(76.dp),
+                shape = RoundedCornerShape(15.dp),
+                color = Color(0xFFF0F5EE)
             ) {
-                BoxContent(emoji)
+                Box(contentAlignment = Alignment.Center) {
+                    Text(product.emoji, fontSize = 39.sp)
+                }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(Modifier.width(13.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    text = name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    product.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Color.DarkGray
                 )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
+                Spacer(Modifier.height(5.dp))
                 Text(
-                    text = price,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = IndiaGreen
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "Fresh • Quality assured",
+                    product.category,
                     fontSize = 11.sp,
                     color = Color.Gray
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    product.price,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Green,
+                    fontSize = 15.sp
                 )
             }
 
@@ -422,126 +488,48 @@ fun ProductCard(
                 onClick = onAdd,
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = IndiaGreen
+                    containerColor = Green
+                ),
+                contentPadding = PaddingValues(
+                    horizontal = 13.dp,
+                    vertical = 7.dp
                 )
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add"
-                )
-
-                Spacer(modifier = Modifier.width(3.dp))
-
-                Text("ADD")
+                Icon(Icons.Default.Add, contentDescription = "Add")
+                Text("ADD", fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
 @Composable
-fun BoxContent(emoji: String) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = emoji,
-            fontSize = 35.sp
-        )
-    }
-}
-
-@Composable
-fun DeliveryBanner() {
+fun DeliveryCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(17.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEAF6EC)
+            containerColor = Color(0xFFE7F5E8)
         )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(17.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "🚚",
-                fontSize = 30.sp
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
+            Text("🚚", fontSize = 36.sp)
+            Spacer(Modifier.width(12.dp))
             Column {
                 Text(
-                    text = "Fast & Free Delivery",
-                    fontWeight = FontWeight.Bold,
-                    color = IndiaGreen
+                    "Fast & Safe Home Delivery",
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Green,
+                    fontSize = 15.sp
                 )
-
-                Spacer(modifier = Modifier.height(3.dp))
-
                 Text(
-                    text = "Easy shopping from Bharat Smart Bazar",
-                    fontSize = 12.sp,
-                    color = Color.DarkGray
+                    "Shopping made easy for your family",
+                    color = Color.DarkGray,
+                    fontSize = 12.sp
                 )
             }
         }
-    }
-}
-
-@Composable
-fun BottomNavigation(cartCount: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        BottomItem(
-            icon = Icons.Default.Home,
-            label = "Home"
-        )
-
-        BottomItem(
-            icon = Icons.Default.Search,
-            label = "Search"
-        )
-
-        BottomItem(
-            icon = Icons.Default.ShoppingCart,
-            label = if (cartCount > 0) "Cart ($cartCount)" else "Cart"
-        )
-
-        BottomItem(
-            icon = Icons.Default.Person,
-            label = "Profile"
-        )
-    }
-}
-
-@Composable
-fun BottomItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = ChakraBlue,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.height(3.dp))
-
-        Text(
-            text = label,
-            fontSize = 11.sp
-        )
     }
 }
